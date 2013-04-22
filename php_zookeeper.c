@@ -333,6 +333,12 @@ static PHP_METHOD(Zookeeper, get)
 	buffer = emalloc (length+1);
 	status = zoo_wget(i_obj->zk, path, (fci.size != 0) ? php_zk_watcher_marshal : NULL,
 					  cb_data, buffer, &length, &stat);
+
+	/* Length will be returned as -1 if the znode carries a NULL */
+	if (status == ZOK && length == -1) {
+		efree (buffer);
+		RETURN_NULL();
+	}
 	buffer[length] = 0;
 
 	if (status != ZOK) {
